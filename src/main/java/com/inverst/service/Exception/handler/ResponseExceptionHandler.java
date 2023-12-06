@@ -5,6 +5,7 @@ import com.inverst.service.Exception.dto.Error;
 import com.inverst.service.Exception.response.ResponseMessage;
 import com.inverst.service.Exception.response.ResponseUtils;
 import com.inverst.service.utils.CommonUtils;
+import com.inverst.service.utils.LogUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
@@ -28,6 +29,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
         Error error = new Error(ResponseMessage.NO_VALUE_PRESENT.getCode(),
                 ResponseMessage.NO_VALUE_PRESENT.getMessage());
 
+        LogUtils.logExceptionDetails(noSuchElementException);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
@@ -37,7 +39,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
         if(exception.responseMessage.getHttpStatus().is2xxSuccessful()){
             return ResponseUtils.createResponse(exception.responseMessage);
         }
-
+        LogUtils.logExceptionDetails(exception);
         return new ResponseEntity<>(error, exception.responseMessage.getHttpStatus());
     }
 
@@ -57,6 +59,7 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
             error = new Error(ResponseMessage.APPLICATION_ERROR.getCode(),
                     ResponseMessage.APPLICATION_ERROR.getMessage());
         }
+        LogUtils.logExceptionDetails(exception);
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
