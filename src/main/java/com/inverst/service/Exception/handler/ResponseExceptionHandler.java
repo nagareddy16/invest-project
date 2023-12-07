@@ -33,8 +33,8 @@ public class ResponseExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ServiceRuntimeException.class)
-    public final ResponseEntity<Error> handleServiceRunTimeException(ServiceRuntimeException exception){
+    @ExceptionHandler(ServicerunTimeException.class)
+    public final ResponseEntity<Error> handleServiceRunTimeException(ServicerunTimeException exception){
         Error error = new Error(exception.responseMessage.getCode(), exception.responseMessage.getMessage());
         if(exception.responseMessage.getHttpStatus().is2xxSuccessful()){
             return ResponseUtils.createResponse(exception.responseMessage);
