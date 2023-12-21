@@ -1,0 +1,64 @@
+name: Invest Project Workflow
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+env:
+  JDK_VERSION: 17
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK ${{ env.JDK_VERSION }}
+        uses: actions/setup-java@v2
+        with:
+          java-version: ${{ env.JDK_VERSION }}
+
+      - name: Build with Maven
+        run: mvn clean install
+
+      - name: Build Application
+        run: mvn package
+
+      - name: Run Spring Boot Application
+        run: mvn spring-boot:run
+
+      - name: Check PR Age
+        id: pr_age
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const thirtyDaysAgo = new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000);
+            const prCreatedAt = new Date(pr.created_at);
+            if (prCreatedAt < thirtyDaysAgo) {
+              core.setOutput('is_stale', 'true');
+            } else {
+              core.setOutput('is_stale', 'false');
+            }
+
+      - name: Close Stale PR
+        if: steps.pr_age.outputs.is_stale == 'true'
+        uses: peter-evans/close-pull-request@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send Failure Notification
+        if: failure()
+        run: |
+          echo "Build failed. Reason: ${{ job.status }}"
+          echo "Please check the logs for more details."
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'nagareddy16'
+          git config --global user.email 'reddynagaa@gmail.com'
